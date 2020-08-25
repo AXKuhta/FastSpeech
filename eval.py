@@ -21,8 +21,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def get_DNN(num):
     checkpoint_path = "checkpoint_" + str(num) + ".pth.tar"
     model = nn.DataParallel(M.FastSpeech()).to(device)
-    model.load_state_dict(torch.load(os.path.join(hp.checkpoint_path,
-                                                  checkpoint_path))['model'])
+    model.load_state_dict(torch.load(os.path.join(
+        hp.checkpoint_path, checkpoint_path), map_location=device)['model'])
     model.eval()
     return model
 
@@ -32,8 +32,8 @@ def synthesis(model, text, alpha=1.0):
     text = np.stack([text])
     src_pos = np.array([i+1 for i in range(text.shape[1])])
     src_pos = np.stack([src_pos])
-    sequence = torch.from_numpy(text).cuda().long()
-    src_pos = torch.from_numpy(src_pos).cuda().long()
+    sequence = torch.from_numpy(text).to(device).long()
+    src_pos = torch.from_numpy(src_pos).to(device).long()
 
     with torch.no_grad():
         _, mel = model.module.forward(sequence, src_pos, alpha=alpha)
