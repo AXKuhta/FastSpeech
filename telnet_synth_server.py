@@ -45,7 +45,7 @@ def synthesis(model, text, alpha=1.0):
         _, mel = model.module.forward(sequence, src_pos, alpha=alpha)
     return mel[0].cpu().transpose(0, 1), mel.contiguous().transpose(1, 2)
 
-# Telnet-style readline
+# Telnet/netcat compatible readline
 # Supports backspace
 def ReadLine(sock):
     str = ""
@@ -54,18 +54,22 @@ def ReadLine(sock):
         chunk = sock.recv(1024)
         if chunk == b'':
             return False
-        if chunk.decode() == '\n':
-            return str
-        if chunk.decode() == '\r\n':
-            return str
+            
+        str = str + chunk.decode()
         
-        # Backspace handling
-        if chunk.decode() == '\b':
-            str = str[:-1]
+        # Windows-style newline
+        if str[-2:] == '\r\n':
+            return str[:-2]
+        
+        # Unix-style newline
+        if str[-1] == '\n':
+            return str[:-1]
+        
+        # Backspace
+        if str[-1] == '\b':
+            str = str[:-2]
             sock.send(" \b".encode())
             continue
-        
-        str = str + chunk.decode()
         
 def WriteLine(sock, line):
     line = line + "\r\n"
@@ -89,14 +93,13 @@ if __name__ == "__main__":
     
     model = get_DNN(args.step)
     
-    print("Waiting for connections...")
-    
     while True:
+        print("Waiting for connections...")
         Client, Addr = MainSocket.accept()
         print("New connection!")
         
         while Client:
-            Client.send(">".encode())
+            Client.send(b">")
             
             Reply = ReadLine(Client)
             
