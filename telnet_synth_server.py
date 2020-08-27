@@ -84,8 +84,8 @@ if __name__ == "__main__":
     # Network init
     WaveGlow = utils.get_WaveGlow()
     parser = argparse.ArgumentParser()
-    parser.add_argument('--step', type=int, default=0)
-    parser.add_argument("--alpha", type=float, default=1.0)
+    parser.add_argument('--step', type=int, default=135000)
+    parser.add_argument("--alpha", type=float, default=0.90)
     args = parser.parse_args()
 
     if not os.path.exists("results"):
